@@ -17,21 +17,20 @@ z_dimensions = 100
 batch_size = 100
 tf.reset_default_graph()
 
-z_placeholder = tf.placeholder(tf.float32, [None, z_dimensions], name='z_placeholder') 
-# z_placeholder is for feeding input noise to the generator
+# Feeding input noise to the generator
+z_placeholder = tf.placeholder(tf.float32, [None, z_dimensions], name='z_placeholder')
 
-x_placeholder = tf.placeholder(tf.float32, shape = [None,28,28,1], name='x_placeholder') 
-# x_placeholder is for feeding input images to the discriminator
+# Feeding input images to the discriminator
+x_placeholder = tf.placeholder(tf.float32, shape = [None,28,28,1], name='x_placeholder')
 
-Gz = generator(z_placeholder, batch_size, z_dimensions) 
 # Gz holds the generated images
+Gz = generator(z_placeholder, batch_size, z_dimensions)
 
-Dx = discriminator(x_placeholder) 
-# Dx will hold discriminator prediction probabilities
-# for the real MNIST images
+# Dx holds discriminator prediction probabilities(real)
+Dx = discriminator(x_placeholder)
 
+# Dg holds discriminator prediction probabilities(generated)
 Dg = discriminator(Gz, reuse_variables=True)
-# Dg will hold discriminator prediction probabilities for generated images
 
 # Two Loss Functions for discriminator
 d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Dx, labels = tf.ones_like(Dx)))
