@@ -23,17 +23,17 @@ z_placeholder = tf.placeholder(tf.float32, shape=[None, z_dimensions], name='z_p
 # Feeding input images to the discriminator
 x_placeholder = tf.placeholder(tf.float32, shape=[None,28,28,1], name='x_placeholder')
 
-# Gz holds the generated images
-Gz = generator(z_placeholder, batch_size, z_dimensions)
+# Gi holds the generated images
+Gi = generator(z_placeholder, batch_size, z_dimensions)
 
-# Dx holds discriminator prediction probabilities(real)
-Dx = discriminator(x_placeholder)
+# Dr holds discriminator prediction probabilities(real)
+Dr = discriminator(x_placeholder)
 
 # Dg holds discriminator prediction probabilities(generated)
-Dg = discriminator(Gz, reuse_variables=True)
+Dg = discriminator(Gi, reuse_variables=True)
 
 # Two Loss Functions for discriminator
-d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Dx, labels = tf.ones_like(Dx)))
+d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Dr, labels = tf.ones_like(Dr)))
 d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Dg, labels = tf.zeros_like(Dg)))
 
 # Loss function for generator
