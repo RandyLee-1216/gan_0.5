@@ -71,7 +71,7 @@ tf.summary.image('Generated_images', images_for_tensorboard, 5)
 merged = tf.summary.merge_all()
 logdir = "tensorboard/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "/"
 writer = tf.summary.FileWriter(logdir, sess.graph)
-print("=======The TensorBoard logdir=", logdir, "=======")
+print("===========The TensorBoard logdir=", logdir, "===========")
 
 
 ## -------------------Start Training Session---------------------- ##
