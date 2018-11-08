@@ -9,31 +9,13 @@ from generator import generator
 
 # Read the dataset
 from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("MNIST_data/")
+mnist = input_data.read_data_sets("official/mnist/dataset.py")
 
-""" See the fake image we make """
 
-# Define the plceholder and the graph
+## ----------------------For Training GAN------------------------ ##
 z_dimensions = 100
-z_placeholder = tf.placeholder(tf.float32, [None, z_dimensions])
-
-# For generator, one image for a batch
-generated_image_output = generator(z_placeholder, 1, z_dimensions)
-z_batch = np.random.normal(0, 1, [1, z_dimensions])
-
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    generated_image = sess.run(generated_image_output,
-                                feed_dict={z_placeholder: z_batch})
-    generated_image = generated_image.reshape([28, 28])
-    plt.imshow(generated_image, cmap='Greys')
-    plt.savefig("./img/test_img.png")
-
-
-""" For Training GAN """
-
-tf.reset_default_graph()
 batch_size = 100
+tf.reset_default_graph()
 
 z_placeholder = tf.placeholder(tf.float32, [None, z_dimensions], name='z_placeholder') 
 # z_placeholder is for feeding input noise to the generator
@@ -58,7 +40,6 @@ d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Dg
 # Loss function for generator
 g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Dg, labels = tf.ones_like(Dg)))
 
-
 # Get the varaibles for different network
 tvars = tf.trainable_variables()
 
@@ -68,7 +49,6 @@ g_vars = [var for var in tvars if 'g_' in var.name]
 print([v.name for v in d_vars])
 print([v.name for v in g_vars])
 
-
 # Train the discriminator
 d_trainer_fake = tf.train.AdamOptimizer(0.0003).minimize(d_loss_fake, var_list=d_vars)
 d_trainer_real = tf.train.AdamOptimizer(0.0003).minimize(d_loss_real, var_list=d_vars)
@@ -77,9 +57,9 @@ d_trainer_real = tf.train.AdamOptimizer(0.0003).minimize(d_loss_real, var_list=d
 g_trainer = tf.train.AdamOptimizer(0.0001).minimize(g_loss, var_list=g_vars)
 
 
-""" For setting TensorBoard """
-
+## ---------------------Setting TensorBoard----------------------- ##
 # From this point forward, reuse variables
+sess = tf.Session()
 tf.get_variable_scope().reuse_variables()
 
 tf.summary.scalar('Generator_loss', g_loss)
@@ -91,16 +71,17 @@ tf.summary.image('Generated_images', images_for_tensorboard, 5)
 merged = tf.summary.merge_all()
 logdir = "tensorboard/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "/"
 writer = tf.summary.FileWriter(logdir, sess.graph)
+print("=======The TensorBoard logdir=", logdir, "=======")
 
 
-""" Start Training Session """
-
+## -------------------Start Training Session---------------------- ##
 saver = tf.train.Saver()
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
 # Pre-train discriminator
+print("=====================start pre-training discriminator======================")
 for i in range(300):
     z_batch = np.random.normal(0, 1, size=[batch_size, z_dimensions])
     real_image_batch = mnist.train.next_batch(batch_size)[0].reshape([batch_size, 28, 28, 1])
@@ -109,9 +90,12 @@ for i in range(300):
 
     if(i % 100 == 0):
         print("dLossReal:", dLossReal, "dLossFake:", dLossFake)
-
+print("=====================pre-train discriminator finished======================")
+        
 # Train generator and discriminator together
-for i in range(100000):
+print("===========================================================================")
+print("=============================start training================================")
+for i in range(200000):
     real_image_batch = mnist.train.next_batch(batch_size)[0].reshape([batch_size, 28, 28, 1])
     z_batch = np.random.normal(0, 1, size=[batch_size, z_dimensions])
 
@@ -133,18 +117,12 @@ for i in range(100000):
         # Save the model every 1000 iteration
         save_path = saver.save(sess, "/tmp/model{}.ckpt".format(i))
         print("Model saved in file: %s" % save_path)
-
-    if i % 100 == 0:
-        # Every 100 iterations, show a generated image
-        print("Iteration:", i, "at", datetime.datetime.now())
+        
+        # Save a generated image every 1000 iteration
         z_batch = np.random.normal(0, 1, size=[1, z_dimensions])
         generated_images = generator(z_placeholder, 1, z_dimensions)
         images = sess.run(generated_images, {z_placeholder: z_batch})
         plt.imshow(images[0].reshape([28, 28]), cmap='Greys')
         plt.savefig("./img/image{}.png".format(i))
-
-        # Show discriminator's estimate
-        im = images[0].reshape([1, 28, 28, 1])
-        result = discriminator(x_placeholder)
-        estimate = sess.run(result, {x_placeholder: im})
-        print("Estimate:", estimate)
+print("============================training finished===============================")
+print("============================================================================")
