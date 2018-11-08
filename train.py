@@ -18,10 +18,10 @@ batch_size = 100
 tf.reset_default_graph()
 
 # Feeding input noise to the generator
-z_placeholder = tf.placeholder(tf.float32, [None, z_dimensions], name='z_placeholder')
+z_placeholder = tf.placeholder(tf.float32, shape=[None, z_dimensions], name='z_placeholder')
 
 # Feeding input images to the discriminator
-x_placeholder = tf.placeholder(tf.float32, shape = [None,28,28,1], name='x_placeholder')
+x_placeholder = tf.placeholder(tf.float32, shape=[None,28,28,1], name='x_placeholder')
 
 # Gz holds the generated images
 Gz = generator(z_placeholder, batch_size, z_dimensions)
